@@ -14,7 +14,7 @@ For short description of available commands, run `.\vcpkg help`.
     - <a href="#example-1-2-c">Option C: Other buildsystems</a>
     - <a href="#example-1-2-d">Option D: VS Project (Individual Project integration)</a>
 - <a href="#example-2">Example 2: Package a remote project (zlib)</a>
-- <a href="example-3-patch-libpng.md">Example 3: Patching libpng to work for uwp-x86</a>
+- [Example 3: Patching libpng to work for uwp-x86](example-3-patch-libpng.md)
 
 <a name="example-1"></a>
 ## Example 1: Using Sqlite
