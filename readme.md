@@ -7,7 +7,7 @@
 
 ### Specifications
 
-[Feature packages](feature-packages.md)
+- [Feature packages](feature-packages.md)
 
 ### Other
 
