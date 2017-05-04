@@ -3,7 +3,7 @@
 Vcpkg is a tool to acquire C++ open source library and rebuild them on Windows. 
 
 ## Can I contribute a new library?
-Yes! Start out by reading our [contribution guidelines](../CONTRIBUTING.md).
+Yes! Start out by reading our [contribution guidelines](https://github.com/Microsoft/vcpkg/blob/master/CONTRIBUTING.md).
 
 ## Can Vcpkg create pre-built binary packages? What is the binary format used by Vcpkg?
 In the preview release, we do not have a supported way to distribute individual binary packages. This avoids the issue of trying to use a specific pre-built package against differently built dependencies. As such, we have also not specified a stable format for the built library packages.
@@ -14,17 +14,17 @@ We instead recommend copying the entire system as a whole (which ensures that ev
 The `vcpkg update` command lists all packages which are out-of-sync with your current portfiles. To update a package, follow the instructions in the command.
 
 ## How do I get more libraries?
-The list of libraries is enumerated from the [`ports\`](../ports) directory. By design, you can add and remove libraries from this directory as you see fit for yourself or your company (see [Example #2](EXAMPLES.md#example-2)).
+The list of libraries is enumerated from the [`ports\`](https://github.com/Microsoft/vcpkg/blob/master/ports) directory. By design, you can add and remove libraries from this directory as you see fit for yourself or your company -- see [Example #2](example-packaging-zlib.md).
 
 We recommend cloning directly from [GitHub](https://github.com/microsoft/vcpkg) and using `git pull` to update the list of portfiles. Once you've updated your portfiles, `vcpkg update` will indicate any installed libraries that are now out of date.
 
 ## Can I build a private library with this tool?
-Yes. Follow [Example #2](EXAMPLES.md#example-2) for creating a portfile using a fake URL. Then, either pre-seed the `downloads\` folder with a zip containing your private sources or replace the normal `vcpkg_download_distfile` and `vcpkg_extract_source_archive` with functions that unpack your source code.
+Yes. Follow [Example #2](example-packaging-zlib.md) for creating a portfile using a fake URL. Then, either pre-seed the `downloads\` folder with a zip containing your private sources or replace the normal calls to `vcpkg_download_distfile` and `vcpkg_extract_source_archive` with functions that unpack your source code.
 
 ## Can I use a prebuilt private library with this tool?
 Yes. The `portfile.cmake` for a library is fundamentally a script that places the headers and binaries into the correct arrangement in the `${CURRENT_PACKAGES_DIR}`, so to pull in prebuilt binaries you can write a portfile which directly downloads and arranges the files.
 
-To see an example of this, look at [`ports\opengl\portfile.cmake`](../ports/opengl/portfile.cmake) package which simply copies files out of the Windows SDK.
+To see an example of this, look at [`ports\opengl\portfile.cmake`](https://github.com/microsoft/vcpkg/blob/master/ports/opengl/portfile.cmake) which simply copies files out of the Windows SDK.
 
 ## Which platforms I can target with Vcpkg?
 We currently target Windows Desktop (x86 and x64) as well as the Universal Windows Platform (x86, x64, and ARM). See `vcpkg help triplet` for the current list.
@@ -35,12 +35,12 @@ No, for this preview we are focusing on Windows as a host platform. If you'd be 
 ## How do I use different versions of a library on one machine?
 Within a single instance of Vcpkg (e.g. one set of `installed\`, `packages\`, `ports\` and so forth), you can only have one version of a library installed (otherwise, the headers would conflict with each other!). This is because a package in Vcpkg corresponds to the `X-dev` or `X-devel` packages in other system package managers.
 
-To use different versions of a library (for different projects), we recommend making separate instances of Vcpkg and using the [per-project integration mechanisms](EXAMPLES.md#example-1-2-d). The versions of each library are specified by the files in `ports\`, so they are easily manipulated using standard VCS techniques. This makes it very easy to roll back the entire set of libraries to a consistent set of older versions which all work with each other. If you need to then pin a specific library forward, that is as easy as checking out the appropriate version of `ports\package\`.
+To use different versions of a library (for different projects), we recommend making separate instances of Vcpkg and using the [per-project integration mechanisms](examples.md#example-1-2-d). The versions of each library are specified by the files in `ports\`, so they are easily manipulated using standard VCS techniques. This makes it very easy to roll back the entire set of libraries to a consistent set of older versions which all work with each other. If you need to then pin a specific library forward, that is as easy as checking out the appropriate version of `ports\package\`.
 
 If your application is very sensitive to the versions of libraries, we recommend checking in the specific set of portfiles you need into your source control along with your project sources and using the `--vcpkg-root` option to redirect the working directory of `vcpkg.exe`. 
 
 ## How does Vcpkg protect my Privacy?
-See the [Privacy document](PRIVACY.md) for all information regarding privacy.
+See the [Privacy document](privacy.md) for all information regarding privacy.
 
 ## Can I use my own CMake toolchain file with Vcpkg's toolchain file?
 Yes. If you already have a CMake toolchain file, you will need to include our toolchain file at the end of yours. This should be as simple as an `include(<vcpkg_root>\scripts\buildsystems\vcpkg.cmake)` directive. Alternatively, you could copy the contents of our `scripts\buildsystems\vcpkg.cmake` into the end of your existing toolchain file.
@@ -64,11 +64,6 @@ We plan to only support Visual Studio 2015 and above.
 ## Why does Visual Studio not use my libraries with user-wide integration enabled?
 Enabling user-wide integration (`vcpkg integrate install`) changes the default for some project properties. In particular, "C/C++/General/Additional Include Directories" and "Linker/General/Additional Library Directories" are normally blank *without* user-wide integration. *With* integration, a blank value means that the augmented default supplied by vcpkg is overridden, and headers/libraries will not be found. To reinstate the default, set the properties to inherit from parent.
 
-## Can I acquire my package's sources by Git url+tag?
-Yes, however we prefer compressed archives of the specific release/commit since the internal downloads and build trees are meant to be read only. Github provides archives for every commit, tag, and branch, so it's always possible to perform this substitution for repositories hosted there.
-
-See [`ports\cpprestsdk\portfile.cmake`](../ports/cpprestsdk/portfile.cmake) for an example of using git directly.
-
 ## Why not NuGet?
 NuGet is a package manager for .NET libraries with a strong dependency on MSBuild. It does not meet the specific needs of Native C++ customers in at least three ways.
 
@@ -90,4 +85,4 @@ Conan.io is a publicly-federated, project-centric, cross-platform, C++ package m
 - **C++/CMake vs python**. While Python is an excellent language loved by many, we believe that transparency and familiarity are the most important factors when choosing a tool as important to your workflow as a package manager. Consequently, we chose to make the implementation languages be as universally accepted as possible: C++ should be used in a C++ package manager for C++ programmers. You should not be required to learn another language just to understand your package manager.
 
 ## Why not Chocolatey?
-Chocolatey is an excellent system for managing software. However, it is not currently designed to acquire redistributable developer assets and help you with debugging. Vcpkg, in comparison, is designed to get you the libraries you need to build your application and help you deliver through any platform you'd like (including Chocolatey!).
+Chocolatey is an excellent system for managing applications. However, it is not currently designed to acquire redistributable developer assets and help you with debugging. Vcpkg, in comparison, is designed to get you the libraries you need to build your application and help you deliver through any platform you'd like (including Chocolatey!).
