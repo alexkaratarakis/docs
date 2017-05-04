@@ -1,17 +1,12 @@
-## Table of Examples
-- [Example 1: Using Sqlite](#example-1)
+## Example: Using Sqlite
+
   - Step 1: Build
   - Step 2: Use
     - Option A: VS Project (User-wide integration)
     - Option B: CMake (Toolchain file)
     - Option C: Other buildsystems
     - Option D: VS Project (Individual Project integration)
-- [Example 2: Package a remote project (zlib)](example-packaging-zlib.md)
-- [Example 3: Patching libpng to work for uwp-x86](example-3-patch-libpng.md)
 
-<a name="example-1"></a>
-## Example 1: Using Sqlite
-<a name="example-1-1"></a>
 ### Step 1: Build
 
 First, we need to know what name [Sqlite](https://sqlite.org) goes by in the ports tree. To do that, we'll run the `search` command and inspect the output:
@@ -74,7 +69,7 @@ See `.\vcpkg help triplet` for all supported targets.
 <a name="example-1-2-a"></a>
 #### Option A: VS Project (User-wide integration)
 
-The recommended and most productive way to use vcpkg is via user-wide integration, making the system available for all projects you build. The user-wide integration will require administrator access the first time it is used on a given machine. After the first use, administrator access is no longer required and the integration is on a per-user basis.
+The recommended and most productive way to use vcpkg is via user-wide integration, making the system available for all projects you build. The user-wide integration will prompt for administrator access the first time it is used on a given machine, but afterwords is no longer required and the integration is configured on a per-user basis.
 ```
 PS D:\src\vcpkg> .\vcpkg integrate install
 Applied user-wide integration for this vcpkg root.
@@ -94,26 +89,22 @@ To remove the integration for your user, you can use `.\vcpkg integrate remove`.
 
 The best way to use installed libraries with cmake is via the toolchain file `scripts\buildsystems\vcpkg.cmake`. To use this file, you simply need to add it onto your CMake command line as `-DCMAKE_TOOLCHAIN_FILE=D:\src\vcpkg\scripts\buildsystems\vcpkg.cmake`.
 
-Alternatively, if you are using CMake through Open Folder with Visual Studio 2017 you can define `CMAKE_TOOLCHAIN_FILE` by adding a `variables` section to each of your `CMakeSettings.json` configurations:
+If you are using CMake through Open Folder with Visual Studio 2017 you can define `CMAKE_TOOLCHAIN_FILE` by adding a `variables` section to each of your `CMakeSettings.json` configurations:
 
 ```json
 {
-    "configurations": [
-        {
-        "name": "x86-Debug",
-        "generator": "Visual Studio 15 2017",
-        "configurationType" : "Debug",
-        "buildRoot":  "${env.LOCALAPPDATA}\\CMakeBuild\\${workspaceHash}\\build\\${name}",
-        "cmakeCommandArgs": "",
-        "buildCommandArgs": "-m -v:minimal",
-        "variables": [
-          {
-            "name": "CMAKE_TOOLCHAIN_FILE",
-            "value": "D:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-          }
-        ]
-        }
-    ]
+  "configurations": [{
+    "name": "x86-Debug",
+    "generator": "Visual Studio 15 2017",
+    "configurationType" : "Debug",
+    "buildRoot":  "${env.LOCALAPPDATA}\\CMakeBuild\\${workspaceHash}\\build\\${name}",
+    "cmakeCommandArgs": "",
+    "buildCommandArgs": "-m -v:minimal",
+    "variables": [{
+      "name": "CMAKE_TOOLCHAIN_FILE",
+      "value": "D:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+    }]
+  }]
 }
 ```
 
@@ -125,8 +116,8 @@ project(test)
 
 find_package(Sqlite3 REQUIRED)
 
-link_libraries(sqlite3)
 add_executable(main main.cpp)
+target_link_libraries(main sqlite3)
 ```
 ```cpp
 // main.cpp
@@ -142,7 +133,7 @@ int main()
 
 Then, we build our project in the normal CMake way:
 ```
-PS D:\src\cmake-test> mkdir build
+PS D:\src\cmake-test> mkdir build 
 PS D:\src\cmake-test> cd build
 PS D:\src\cmake-test\build> cmake .. "-DCMAKE_TOOLCHAIN_FILE=D:\src\vcpkg\scripts\buildsystems\vcpkg.cmake"
     // omitted CMake output here //
@@ -159,6 +150,8 @@ PS D:\src\cmake-test\build> .\Debug\main.exe
 ```
 
 *Note: The correct sqlite3.dll is automatically copied to the output folder when building for x86-windows. You will need to distribute this along with your application.*
+
+##### Handling libraries without native cmake support
 
 Unlike other platforms, we do not automatically add the `include\` directory to your compilation line by default. If you're using a library that does not provide CMake integration, you will need to explicitly search for the files and add them yourself using [`find_path()`][1] and [`find_library()`][2].
 

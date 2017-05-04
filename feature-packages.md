@@ -18,9 +18,11 @@ Finally, these extensions add additional exports and headers which could be depe
 
 ### C. C++ REST SDK + SignalR
 
-The [C++ REST SDK][cpprestsdk] is a networking library that provides (among other features) HTTP and Websockets clients. To implement the HTTP client functionality on Windows Desktop, only the core Win32 platform APIs are needed (`zlib` is optional). However, the websockets client is based on [Websockets++][], which adds mandatory dependencies on `boost`, `openssl`, and `zlib`. Many users of the C++ REST SDK do not use the websockets component, so to minimize their overall dependency footprint it can be disabled at build time. Ideally, this option would be easily accessible to users who are concerned about the final size or licensing of their deployment.
+The [C++ REST SDK][cpprestsdk] is a networking library that provides (among other features) HTTP and Websockets clients. To implement the HTTP client functionality on Windows Desktop, only the core Win32 platform APIs are needed (`zlib` is optional).
 
-However, [SignalR-Client-Cpp][SignalR] depends on the websockets functionality provided by the C++ REST SDK. Therefore, the maintainers of the `signalrclient` port would ideally like to express this dependency such that `cpprestsdk` will be correctly built for their needs. Note that `signalrclient` does not _inherently_ care about `boost`, `websocketspp` or `openssl`, rather it depends only on the public websocket client APIs provided by `cpprestsdk`. It would be much more maintainable to declare dependencies based on the public APIs rather than the dependencies themselves.
+However, the websockets client is based on [Websockets++][], which adds mandatory dependencies on `boost`, `openssl`, and `zlib`. Many users of the C++ REST SDK do not use the websockets component, so to minimize their overall dependency footprint it can be disabled at build time. Ideally, these kinds of options would be easily accessible to users in Vcpkg who are concerned about the final size or licensing of their deployment.
+
+[SignalR-Client-Cpp][SignalR] depends on the websockets functionality provided by the C++ REST SDK. Therefore, the maintainers of the `signalrclient` port would ideally like to express this dependency such that `cpprestsdk` will be automatically correctly built for their needs. Note that `signalrclient` does not _inherently_ care about `boost`, `websocketspp` or `openssl` -- it depends only on the public websocket client APIs provided by `cpprestsdk`. It would be much more maintainable to declare dependencies based on the public APIs rather than the dependencies themselves.
 
 [OpenCV]: http://opencv.org/
 [CUDA]: http://www.nvidia.com/object/cuda_home_new.html
@@ -31,15 +33,15 @@ However, [SignalR-Client-Cpp][SignalR] depends on the websockets functionality p
 
 ## 2. Other design concerns
 
-- General-purpose Open Source projects must be able to easily and succinctly describe their build dependencies inside Vcpkg. This should be no more verbose than a single `vcpkg install` line and, when that command succeeds, there is a guarantee that all required functionality/headers/imports are available.
+- General-purpose Open Source projects must be able to easily and succinctly describe their build dependencies inside Vcpkg. This should be no more verbose than a single `vcpkg install` line and, when that command succeeds, there is a strong expectation that all required functionality/headers/imports are available.
 
 - The internal state of the Vcpkg enlistment must be either extremely transparent OR managed by version control (git). This enables larger projects to efficiently transfer the entire state of their customized Vcpkg system between machines (and onto build servers) by having the destination clone and then run a single `vcpkg install` line for the subset of dependencies required. The results of this operation should be as repeatable as reasonably achievable given the current limits of the underlying toolchain.
 
 ## 3. Proposed solution
 
-A key summary of the above motivations is that they are all scenarios surrounding APIs that are not independently buildable from each other. We have an existing solution for APIs that are independently buildable: separate packages. Therefore, we seek to extend the user-facing notion of "packages" to include capabilities and contracts that may not be build-time independent.
+A key summary of the above motivations is that they are all scenarios surrounding APIs that are not independently buildable from each other. We have an existing solution for APIs that are independently buildable: separate packages. Therefore, we seek to extend the user-facing notion of "packages" to include capabilities and contracts that cannot be made into independent builds.
 
-This document proposes "features" (also called feature packages). These features are intended to model semi-independently toggleable API sets/contracts such that they can be sanely depended upon by other packages. It is not a goal to model exclusive alternatives (such as implementation choices that are not user-observable) through this mechanism.
+This document proposes "features" (also called feature packages). These features are intended to model semi-independently toggleable API sets/contracts such that they can be sanely depended upon by other packages. It is not a goal to model exclusive alternatives (such as implementation choices that are not directly user-observable) through this mechanism.
 
 - Individual libraries within `boost` may be reasonably represented as features.
 - Whether a graphics library is built on DirectX xor OpenGL (where one but not both must be chosen) is not representable as a feature.
@@ -201,13 +203,13 @@ cpprestsdk/compression:x86-windows                 Gzip compression support in t
     - `opencv/cuda` depends on `cuda`
     - `opencv/contrib` depends on `opencv/cuda`
     - `boost/python` depends on `libpython`
-- Every package has an implicit feature called `core`, which covers the core library without any features enabled. All features implicitly depend on the `core` feature of their parent package
+- Every package has an implicit feature called `core`, which covers the core library with a minimum featureset. All features implicitly depend on the `core` feature of their parent package
     - `azure-storage-cpp` depends on `cpprestsdk/core`
 - Each package declares a list of default features that are enabled when the package is referred to by its raw name, and `core` is implicitly a default feature.
     - `cpprestsdk` declares `ws-client` to be a default feature. Any reference `cpprestsdk` implicitly means `cpprestsdk/core` _and_ `cpprestsdk/ws-client`.
     - `opencv` does not declare `cuda` nor `contrib` to be default features.
 
-As a conclusion of the above, it is expected that all packages will be buildable with all features disabled (just the `core` feature) OR with all features enabled.
+As a conclusion of the above, it is expected that all packages will be buildable with all features disabled (just the `core` feature) and with all features enabled.
 
 ## 4. Related Work
 
@@ -217,16 +219,18 @@ The proposed feature packages are exceedingly similar to Cargo's Features, with 
 - We avoid any collision problems because features are always namespaced by the owning package
 - We do not have a concept of "feature groups", instead we allow dependencies from one feature to another within the same package (Note: This may be how "feature groups" are implemented internally to Cargo -- it was not clear from the documentation).
 - Because of the nature of C and C++, it is extremely commonplace that large software packages can have features disabled to remove their dependencies upon other libraries. Changing this configuration requires a rebuild of the package and potentially rippling ABI changes to any downstream dependencies. Therefore, we expect significantly more use of this feature to manage optional API contracts instead of the intended use in Cargo (curation).
-- We do not intend feature packages to be used to express the curation relationship.
+- We do not intend feature packages to be used to express the curation relationship, beyond the notion of a "default" set within a package.
 
 ### Gentoo's USE flags: <https://wiki.gentoo.org/wiki/Handbook:X86/Working/USE>
-Gentoo's USE flags can be shortly summarized as a global set of keywords that is used to make cross-cutting changes to the entire package graph's build configuration. This system standardizes many common settings such that they can be simultaneously toggled for the entire graph. The most common example of this would be using KDE vs Gnome. A user who knows that, given the choice, they would prefer the KDE/Qt interface can manage the massive space of package configuration efficiently without learning the particular term that each package has decided to call "build using Qt instead of GTK".
+Gentoo's USE flags can be shortly summarized as a global set of keywords that is used to make cross-cutting changes to the entire package graph's build configuration. This system standardizes many common settings such that they can be simultaneously toggled for the entire graph.
+
+The most common example of this would be using KDE vs Gnome. A user who knows that, given the choice, they would prefer the KDE/Qt interface can manage the massive space of package configuration efficiently without learning the particular term that each package has decided to call "build using Qt instead of GTK".
 
 USE flags can be customized hierarchically when needed, including at the per-package level. They can be depended upon by other packages, both positively and negatively. USE flags themselves can be used in any boolean expression to determine the complete set of package dependencies, including removing dependencies when flags are enabled.
 
 Problems with USE flags:
 
-- They require significant coordination from package maintainers. This increases the burden of adding a package -- to author a good package, I need to be aware of every uncommon USE flag and evaluate how those could map onto my local configuration space.
+- They require coordination from package maintainers to achieve the goal of "portable" flags. This increases the burden of adding a package -- to author a good package, I need to be aware of every uncommon USE flag and evaluate how those could map onto my local configuration space.
 - Based on research online, it seems extremely common that users need to tweak flags at a per-package level. This calls into question how valuable the cross-cutting power above is.
-- The vast majority of common USE flags are essentially a list of all the common packages and focus on giving the user a view of dependencies (which a package manager is designed to hide when possible) instead of features (which is what users normally care about).
-- Dependency analysis with USE flags becomes a SAT problem with an enormous state space -- P*F bits -- which compounds with any versioning relations. This works acceptably in practice via heuristics, but it implies that a) there is a looming performance wall which could suddenly create a poor user experience and b) the heuristics may not correctly model the user's needs, which can cause a disconnect in desire vs practice, which again causes a poor user experience.
+- The vast majority of common USE flags are essentially a list of all the common packages and focus on giving the user a view of dependencies (which a package manager is designed to abstract when possible) instead of APIs (which is what users _normally_ care about and code against).
+- Dependency analysis with USE flags becomes a SAT problem with an enormous state space -- P*F bits -- which compounds with any versioning relations. This works acceptably in practice via heuristics, but it implies that a) there is a looming performance wall which could suddenly create a poor user experience and b) the heuristics may incorrectly model the user's needs, causing a disconnect in desire vs practice, which again leads to a poor user experience.
