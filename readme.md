@@ -5,11 +5,16 @@
 - [Example 2: Package a remote project (zlib)](example-packaging-zlib.md)
 - [Example 3: Patching libpng to work for uwp-x86](example-3-patch-libpng.md)
 
+### Help Topics
+
+- [Integration with build systems](integration.md)
+
 ### Specifications
 
-- [Feature packages](feature-packages.md)
+- [Feature Packages](feature-packages.md)
+- [Export](readme.md)
 
 ### Other
 
 - [FAQ](faq.md)
-- [privacy](privacy.md)
+- [Privacy](privacy.md)

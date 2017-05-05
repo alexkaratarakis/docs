@@ -4,8 +4,7 @@
 
 ## Do you collect telemetry data? What is it used for? 
 
-We do collect telemetry data from usage of "vcpkg.exe". We explicitly ONLY collect information from invocations of the tool itself; we do NOT add any tracking information into the produced libraries. 
-We use this information to understand usage issues and to guide tool improvements.
+We do collect telemetry data from usage of "vcpkg.exe". We explicitly ONLY collect information from invocations of the tool itself; we do NOT add any tracking information into the produced libraries. We use this information to understand usage issues and to guide tool improvements.
 
 
 ## What telemetry is collected? 

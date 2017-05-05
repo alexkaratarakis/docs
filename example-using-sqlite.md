@@ -1,13 +1,11 @@
 ## Example: Using Sqlite
 
-  - Step 1: Build
+  - Step 1: Install
   - Step 2: Use
-    - Option A: VS Project (User-wide integration)
-    - Option B: CMake (Toolchain file)
-    - Option C: Other buildsystems
-    - Option D: VS Project (Individual Project integration)
+    - [VS/MSBuild Project (User-wide integration)](#msbuild)
+    - [CMake (Toolchain file)](#cmake)
 
-### Step 1: Build
+### Step 1: Install
 
 First, we need to know what name [Sqlite](https://sqlite.org) goes by in the ports tree. To do that, we'll run the `search` command and inspect the output:
 ```
@@ -64,10 +62,9 @@ PS D:\src\vcpkg> .\vcpkg install sqlite3:x86-uwp zlib:x64-windows
 
 See `.\vcpkg help triplet` for all supported targets.
 
-<a name="example-1-2"></a>
 ### Step 2: Use
-<a name="example-1-2-a"></a>
-#### Option A: VS Project (User-wide integration)
+<a name="msbuild"></a>
+#### VS/MSBuild Project (User-wide integration)
 
 The recommended and most productive way to use vcpkg is via user-wide integration, making the system available for all projects you build. The user-wide integration will prompt for administrator access the first time it is used on a given machine, but afterwords is no longer required and the integration is configured on a per-user basis.
 ```
@@ -84,12 +81,12 @@ You can now simply use File -> New Project in Visual Studio 2015 or Visual Studi
 
 To remove the integration for your user, you can use `.\vcpkg integrate remove`.
 
-<a name="example-1-2-b"></a>
-#### Option B: CMake (Toolchain File)
+<a name="cmake"></a>
+#### CMake (Toolchain File)
 
 The best way to use installed libraries with cmake is via the toolchain file `scripts\buildsystems\vcpkg.cmake`. To use this file, you simply need to add it onto your CMake command line as `-DCMAKE_TOOLCHAIN_FILE=D:\src\vcpkg\scripts\buildsystems\vcpkg.cmake`.
 
-If you are using CMake through Open Folder with Visual Studio 2017 you can define `CMAKE_TOOLCHAIN_FILE` by adding a `variables` section to each of your `CMakeSettings.json` configurations:
+If you are using CMake through Open Folder with Visual Studio 2017 you can define `CMAKE_TOOLCHAIN_FILE` by adding a "variables" section to each of your `CMakeSettings.json` configurations:
 
 ```json
 {
@@ -174,34 +171,5 @@ link_libraries(${WASTORAGE_LIBRARY})
 [1]: https://cmake.org/cmake/help/latest/command/find_path.html
 [2]: https://cmake.org/cmake/help/latest/command/find_library.html
 
-<a name="example-1-2-c"></a>
-#### Option C: Other buildsystems
 
-Libraries are installed into the `installed\` subfolder, partitioned by architecture (e.g. x86-windows):
-* The header files are installed to `installed\x86-windows\include`
-* Release `.lib` files are installed to `installed\x86-windows\lib` or `installed\x86-windows\lib\manual-link`
-* Release `.dll` files are installed to `installed\x86-windows\bin`
-* Debug `.lib` files are installed to `installed\x86-windows\debug\lib` or `installed\x86-windows\debug\lib\manual-link`
-* Debug `.dll` files are installed to `installed\x86-windows\debug\bin`
-
-See your build system specific documentation for how to use prebuilt binaries.
-
-Generally, to run any produced executables you will also need to either copy the needed `dll` files to the same folder as your `exe` or *prepend* the correct `bin` directory to your path.
-
-Example for setting the path for debug mode in powershell:
-```
-PS D:\src\vcpkg> $env:path = "D:\src\vcpkg\installed\x86-windows\debug\bin;" + $env:path
-```
-<a name="example-1-2-d"></a>
-#### Option D: VS Project (Individual Project integration)
-
-We also provide individual VS project integration through a NuGet package. This will modify the project file, so we do not recommend this approach for open source projects.
-```
-PS D:\src\vcpkg> .\vcpkg integrate project
-Created nupkg: D:\src\vcpkg\scripts\buildsystems\vcpkg.D.src.vcpkg.1.0.0.nupkg
-
-With a project open, go to Tools->NuGet Package Manager->Package Manager Console and paste:
-    Install-Package vcpkg.D.src.vcpkg -Source "D:/src/vcpkg/scripts/buildsystems"
-```
-*Note: The generated NuGet package does not contain the actual libraries. It instead acts like a shortcut (or symlink) to the vcpkg install and will "automatically" update with any changes (install/remove) to the libraries. You do not need to regenerate or update the NuGet package.*
 
