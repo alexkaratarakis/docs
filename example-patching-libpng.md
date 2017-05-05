@@ -1,4 +1,4 @@
-## Example 3: Patching libpng to work for uwp-x86
+## Example 3: Patching libpng to work for x86-uwp
 
 ### Initial error logs
 First, try building:
@@ -114,7 +114,7 @@ This already gives us some great clues, but the full definition tells the comple
 
 ### Patching the code to improve compatibility
 
-I recommend using git to create the patch file, since you'll already have it installed.
+We recommend using git to create the patch file, since you'll already have it installed.
 ```
 PS D:\src\vcpkg\buildtrees\libpng\src\libpng-1.6.24> git init .
 Initialized empty Git repository in D:/src/vcpkg/buildtrees/libpng/src/libpng-1.6.24/.git/
@@ -166,7 +166,7 @@ To be completely sure this works from scratch, we need to remove the package and
 PS D:\src\vcpkg> vcpkg remove libpng:x86-uwp
 Package libpng:x86-uwp was successfully removed
 ```
-and delete the building directory: D:\src\vcpkg\buildtrees\libpng
+and complete delete the building directory: D:\src\vcpkg\buildtrees\libpng
 
 Now we try a fresh, from scratch install.
 ```
@@ -194,7 +194,7 @@ PS D:\src\vcpkg> vcpkg install libpng:x86-uwp
 Package libpng:x86-uwp is installed
 ```
 
-Finally, to fully commit and publish the changes, we need to bump the internal release number and add the patch file to source control.
+Finally, to fully commit and publish the changes, we need to bump the internal release number and add the patch file to source control, then make a Pull Request!
 
 ```
 # ports\libpng\CONTROL

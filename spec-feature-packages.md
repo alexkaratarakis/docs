@@ -1,4 +1,4 @@
-# Features / Feature packages
+# Features / Feature packages (Feb 23 2017)
 
 ## 1. Motivation
 

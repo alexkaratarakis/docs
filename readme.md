@@ -2,8 +2,8 @@
 ### Examples
 
 - [Example 1: Using Sqlite](example-using-sqlite.md)
-- [Example 2: Package a remote project (zlib)](example-packaging-zlib.md)
-- [Example 3: Patching libpng to work for uwp-x86](example-3-patch-libpng.md)
+- [Example 2: Packaging zlib](example-packaging-zlib.md)
+- [Example 3: Patching libpng to work for x86-uwp](example-3-patch-libpng.md)
 
 ### Help Topics
 
@@ -11,8 +11,8 @@
 
 ### Specifications
 
-- [Feature Packages](feature-packages.md)
-- [Export](readme.md)
+- [Export](spec-export.md)
+- [Feature Packages](spec-feature-packages.md)
 
 ### Other
 
